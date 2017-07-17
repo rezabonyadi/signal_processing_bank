@@ -2,7 +2,7 @@ import numpy as np
 from timeit import default_timer as timer
 
 
-class SignalMeasuresCalculators:
+class Features:
 
     @staticmethod
     def accumulated_energy(x, settings):
@@ -11,10 +11,10 @@ class SignalMeasuresCalculators:
         :param settings: it provides a dictionary that includes an attribute "window_size" in which the energy is
             calculated.
         :return: is a dictionary that includes:
-            "final_values" that is an array with the size "number of channels", each indicates the accumulated energy
+            "final_values":     is an array with the size "number of channels", each indicates the accumulated energy
             in that channel.
-             "function_name": that is the name of this function ("accumulated_energy").
-             "time": the amount of time in seconds that the calculations required.
+             "function_name":   that is the name of this function ("accumulated_energy").
+             "time":            the amount of time in seconds that the calculations required.
         """
         window_size = settings["window_size"]
 
