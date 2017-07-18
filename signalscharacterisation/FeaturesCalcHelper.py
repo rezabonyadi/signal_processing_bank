@@ -50,12 +50,16 @@ def fill_results(measures_names, final_values, function_name, time):
     return results
 
 
-def corr(data, type_corr):
-    C = np.array(data.corr(type_corr))
+def calc_corr(data):
+    C = np.array(np.corrcoef(data))
     C[np.isnan(C)] = 0  # Replace any NaN with 0
     C[np.isinf(C)] = 0  # Replace any Infinite values with 0
-    w, v = np.linalg.eig(C)
+
+    return C
+
+def cal_eigens(x):
+    w, v = np.linalg.eig(x)
     # print(w)
-    x = np.sort(w)
-    x = np.real(x)
-    return x
+    w = np.sort(w)
+    w = np.real(w)
+    return {"lambda": w, "vectors": v}

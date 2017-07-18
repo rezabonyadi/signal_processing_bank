@@ -5,8 +5,11 @@ from signalscharacterisation import FeaturesCalcHelper
 
 
 class FeaturesImplementations:
+    """
+
+    """
     features_list = ["accumulated_energy", "moments_channels", "freq_bands_measures", "dyadic_spectrum_measures",
-                     "spectral_edge_freq"]
+                     "spectral_edge_freq", "correlation_channels", "correlation_channels_freq"]
 
     @staticmethod
     def get_features_list():
@@ -100,7 +103,8 @@ class FeaturesImplementations:
         """
 
         sampling_freq = settings["sampling_freq"]
-        time = [0, 0]
+        type_corr = settings["corr_type"]
+        time = [0, 0, 0]
         x = np.transpose(x)
         n_samples = x.shape[0]
         lvl_d = np.floor(n_samples/2)
@@ -119,8 +123,13 @@ class FeaturesImplementations:
         t = timer()
         shannon_entropy = -1 * np.sum(np.multiply(power_spectrum, np.log(power_spectrum)), axis=0)
         time[1] = timer() - t
-        results = FeaturesCalcHelper.fill_results(["power spectrum", "shannon entropy"],
-                                                  [power_spectrum, shannon_entropy],
+        t = timer()
+        power_spec_corr = FeaturesCalcHelper.calc_corr(np.transpose(power_spectrum))
+        iu = np.triu_indices(power_spec_corr.shape[0], 1)
+        power_spec_corr = power_spec_corr[iu]
+        time[2] = timer() - t
+        results = FeaturesCalcHelper.fill_results(["power spectrum", "shannon entropy", "dyadic powers corr"],
+                                                  [power_spectrum, shannon_entropy, power_spec_corr],
                                                   "dyadic_spectrum_measures", time)
 
         return results
@@ -153,4 +162,27 @@ class FeaturesImplementations:
                                                   "spectral_edge_freq", [t])
         return results
 
+    @staticmethod
+    def correlation_channels(x, settings):
+        # Calculate correlation matrix and its eigenvalues (b/w channels)
+        t = timer()
+        channels_correlations = FeaturesCalcHelper.calc_corr(x)
+        iu = np.triu_indices(channels_correlations.shape[0], 1)
+        channels_correlations = channels_correlations[iu]
+        t = timer() - t
+        results = FeaturesCalcHelper.fill_results(["correlation between channels"], [channels_correlations],
+                                                  "correlation_channels", [t])
+        return results
 
+    @staticmethod
+    def correlation_channels_freq(x, settings):
+        # Calculate correlation matrix and its eigenvalues (b/w channels)
+        t = timer()
+        d = FeaturesCalcHelper.calc_normalized_fft(x)
+        channels_correlations = FeaturesCalcHelper.calc_corr(d)
+        iu = np.triu_indices(channels_correlations.shape[0], 1)
+        channels_correlations = channels_correlations[iu]
+        t = timer() - t
+        results = FeaturesCalcHelper.fill_results(["correlation between freq channels"], [channels_correlations],
+                                                  "correlation_channels_freq", [t])
+        return results
