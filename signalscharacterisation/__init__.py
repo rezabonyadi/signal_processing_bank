@@ -1,1 +1,1 @@
-from signalscharacterisation import FeaturesBank
+from signalscharacterisation.FeaturesBank import SignalsFeatures
