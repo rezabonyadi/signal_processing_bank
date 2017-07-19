@@ -3,7 +3,7 @@ import signalscharacterisation.FeaturesImplementations as FeImpl
 
 class SignalsFeatures:
     @staticmethod
-    def call_features_by_indexes(features_indexes, x, settings):
+    def call_features_by_indexes(features_indexes, x, settings, normalise=0):
         """
         This function call a set of features by their indexes.
 
@@ -11,6 +11,8 @@ class SignalsFeatures:
         by calling get_features_list() function
         :param x: The input signal (channel by samples)
         :param settings: The settings required for that function as a dictionary.
+        :param normalise: Whether to normalise the results. It is done per FEATURE independently across of its values,
+        NOT per channel.
         :return: The dictionary including "final_values", "time" of calculations, "measures_names" calculated in that
         function, and the "function_name".
         """
@@ -19,7 +21,7 @@ class SignalsFeatures:
         return_list = [dict() for i in range(length[0])]
         features_list = SignalsFeatures.get_features_list()
         for i in features_indexes:
-            return_list[i] = SignalsFeatures.call_feature_by_name(features_list[i], x, settings)
+            return_list[i] = SignalsFeatures.call_feature_by_name(features_list[i], x, settings, normalise)
 
         return return_list
 
@@ -33,15 +35,18 @@ class SignalsFeatures:
         return FeImpl.FeaturesImplementations.get_features_list()
 
     @staticmethod
-    def call_feature_by_name(feature_name, x, settings):
+    def call_feature_by_name(feature_name, x, settings, normalise=0):
         """
         This function calls a feature by its names as a string.
 
         :param feature_name: The name of the function to calculate the feature.
         :param x: The input signal (channel by samples)
         :param settings: The settings required for that function as a dictionary.
+        :param normalise: Whether to normalise the results. It is done per FEATURE independently across of its values,
+        NOT per channel.
         :return: The dictionary including "final_values", "time" of calculations, "measures_names" calculated in that
         function, and the "function_name".
         """
         feature = getattr(FeImpl.FeaturesImplementations, feature_name)
+        settings["is_normalised"] = normalise
         return feature(x, settings)

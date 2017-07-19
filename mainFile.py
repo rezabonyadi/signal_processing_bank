@@ -18,7 +18,7 @@ fea_list = np.array([0, 1])
 
 all_features = SignalsFeatures.get_features_list()
 for i in range(0, len(all_features)):
-    res = SignalsFeatures.call_feature_by_name(all_features[i], x, settings)
+    res = SignalsFeatures.call_feature_by_name(all_features[i], x, settings, normalise=1)
     print({res["function_name"]: res["final_values"]})
 
 x = 0

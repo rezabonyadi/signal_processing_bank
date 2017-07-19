@@ -44,12 +44,17 @@ def calc_spectrum(x, freq_levels, sampling_freq):
     return dspect
 
 
-def fill_results(measures_names, final_values, function_name, time):
+def fill_results(measures_names, final_values, function_name, time, normalise=0):
     results = dict()
+    if normalise == 1:
+        for measure in final_values:
+            measure /= measure.sum()
+
     results["measures_names"] = measures_names
     results["final_values"] = final_values
     results["function_name"] = function_name
     results["time"] = time
+    results["is_normalised"] = normalise
     return results
 
 

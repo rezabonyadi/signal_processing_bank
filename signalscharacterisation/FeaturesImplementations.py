@@ -54,8 +54,13 @@ class FeaturesImplementations:
             k = k + 1
 
         total_time = timer() - total_time
-        results = FeaturesCalcHelper.fill_results(["energy"],
-                                                  [np.sum(variances, axis=1)], "accumulated_energy", [total_time])
+        final_values = np.sum(variances, axis=1)
+
+        # if settings["is_normalised"] == 1:
+        #     final_values /= final_values.sum()
+
+        results = FeaturesCalcHelper.fill_results(["energy"], [final_values],
+                                                  "accumulated_energy", [total_time], settings["is_normalised"])
         return results
 
     @staticmethod
@@ -84,7 +89,8 @@ class FeaturesImplementations:
         results = FeaturesCalcHelper.fill_results(["mean", "variance", "skewness", "kurtosis"],
                                                   [mean_values, variance_values, skewness_values, kurtosis_values],
                                                   "moments_channels",
-                                                  [mean_time, variance_time, skewness_time, kurtosis_time])
+                                                  [mean_time, variance_time, skewness_time, kurtosis_time],
+                                                  settings["is_normalised"])
 
         return results
 
@@ -110,7 +116,7 @@ class FeaturesImplementations:
         time[1] = timer() - t
         results = FeaturesCalcHelper.fill_results(["power spectrum", "shannon entropy"],
                                                   [power_spectrum, shannon_entropy],
-                                                  "freq_bands_measures", time)
+                                                  "freq_bands_measures", time, settings["is_normalised"])
 
         return results
 
@@ -154,7 +160,7 @@ class FeaturesImplementations:
         time[2] = timer() - t
         results = FeaturesCalcHelper.fill_results(["power spectrum", "shannon entropy", "dyadic powers corr"],
                                                   [power_spectrum, shannon_entropy, power_spec_corr],
-                                                  "dyadic_spectrum_measures", time)
+                                                  "dyadic_spectrum_measures", time, settings["is_normalised"])
 
         return results
 
@@ -185,7 +191,7 @@ class FeaturesImplementations:
         t = timer() - t
 
         results = FeaturesCalcHelper.fill_results(["spectral edge freq"], [spedge],
-                                                  "spectral_edge_freq", [t])
+                                                  "spectral_edge_freq", [t], settings["is_normalised"])
         return results
 
     @staticmethod
@@ -215,7 +221,7 @@ class FeaturesImplementations:
 
         results = FeaturesCalcHelper.fill_results(["correlation_channels", "lambda"],
                                                   [channels_correlations, channels_correlations_eigs],
-                                                  "correlation_channels_time", [time])
+                                                  "correlation_channels_time", [time], settings["is_normalised"])
         return results
 
     @staticmethod
@@ -245,7 +251,7 @@ class FeaturesImplementations:
 
         results = FeaturesCalcHelper.fill_results(["correlation_channels_freq", "lambda"],
                                                   [channels_correlations, channels_correlations_eigs],
-                                                  "correlation_channels_freq", [time])
+                                                  "correlation_channels_freq", [time], settings["is_normalised"])
         return results
 
     @staticmethod
@@ -276,7 +282,8 @@ class FeaturesImplementations:
         time[2] = t - timer()
 
         results = FeaturesCalcHelper.fill_results(["activity", "mobility", "complexity"],
-                                                  [activity, mobility, complexity], "h_jorth", [t])
+                                                  [activity, mobility, complexity], "h_jorth", [t],
+                                                  settings["is_normalised"])
         return results
 
     @staticmethod
@@ -298,7 +305,8 @@ class FeaturesImplementations:
                                                   x, settings["hjorth_fd_k_max"])
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["h-jorth-FD"],
-                                                  dimensions_channels, "hjorth_fractal_dimension", [t])
+                                                  [dimensions_channels], "hjorth_fractal_dimension", [t],
+                                                  settings["is_normalised"])
         return results
 
     @staticmethod
@@ -314,7 +322,8 @@ class FeaturesImplementations:
         dimensions_channels = np.apply_along_axis(FeaturesCalcHelper.calc_petrosian_fractal_dimension, 1, x)
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["petrosian-FD"],
-                                                  dimensions_channels, "petrosian_fractal_dimension", [t])
+                                                  [dimensions_channels], "petrosian_fractal_dimension", [t],
+                                                  settings["is_normalised"])
         return results
 
     @staticmethod
@@ -334,11 +343,12 @@ class FeaturesImplementations:
         t = timer() - t
 
         results = FeaturesCalcHelper.fill_results(["kartz-FD"],
-                                                  dimensions_channels, "katz_fractal_dimension", [t])
+                                                  [dimensions_channels], "katz_fractal_dimension", [t],
+                                                  settings["is_normalised"])
         return results
 
     @staticmethod
-    def hurst_fractal_dimension(x, settigns):
+    def hurst_fractal_dimension(x, settings):
         """
         Hurst fractal dimension, see https://en.wikipedia.org/wiki/Hurst_exponent
 
@@ -350,7 +360,8 @@ class FeaturesImplementations:
         dimensions_channels = np.apply_along_axis(FeaturesCalcHelper.calc_hurst, 1, x)
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["hurst-FD"],
-                                                  dimensions_channels, "hurst_fractal_dimension", [t])
+                                                  [dimensions_channels], "hurst_fractal_dimension", [t],
+                                                  settings["is_normalised"])
         return results
 
     @staticmethod
@@ -376,7 +387,7 @@ class FeaturesImplementations:
         # np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, nvals=nvals, overlap=overlap, order=order)
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["detrended_fluctuation"],
-                                                  dfa_channels, "detrended_fluctuation", [t])
+                                                  [], "detrended_fluctuation", [t], settings["is_normalised"])
         return results
 
     @staticmethod
@@ -394,7 +405,7 @@ class FeaturesImplementations:
         autocorrs = autocorrs[:, 1:]
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["autocorrelation"],
-                                                  autocorrs, "autocorrelation", [t])
+                                                  [autocorrs], "autocorrelation", [t], settings["is_normalised"])
         return results
 
     @staticmethod
@@ -420,5 +431,5 @@ class FeaturesImplementations:
 
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["autoregression"],
-                                                  channels_regg, "autoregression", [t])
+                                                  [channels_regg], "autoregression", [t], settings["is_normalised"])
         return results
