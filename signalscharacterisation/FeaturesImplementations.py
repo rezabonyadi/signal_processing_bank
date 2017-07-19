@@ -21,6 +21,11 @@ class FeaturesImplementations:
 
     @staticmethod
     def get_features_list():
+        """
+        The function essentially returns the features_list list. This is a list of available functions to be used.
+
+        :return: a list of the name of available functions as features.
+        """
         return FeaturesImplementations.features_list
 
     @staticmethod
@@ -57,8 +62,9 @@ class FeaturesImplementations:
     def moments_channels(x, settings):
         """
         Calculates mean, variance, skewness, and kurtosis of the given signal.
+
         :param x: the input signal. Its size is (number of channels, samples).
-        :param settings:
+        :param settings: it provides a dictionary, empty for this function.
         :return:
         """
 
@@ -85,8 +91,10 @@ class FeaturesImplementations:
     @staticmethod
     def freq_bands_measures(x, settings):
         """
+
         :param x: the input signal. Its size is (number of channels, samples).
-        :param settings:
+        :param settings: it provides a dictionary that includes an attribute "sampling_freq" in which sampling
+        frequency of the data.
         :return:
         """
         sampling_freq = settings["sampling_freq"]
@@ -109,14 +117,17 @@ class FeaturesImplementations:
     @staticmethod
     def dyadic_spectrum_measures(x, settings):
         """
+        This function calculates the dyadic spectrum measures (power, shannon entropy, and correlation of powers in
+        each frequency band among each pair of channels).
 
         :param x: the input signal. Its size is (number of channels, samples).
-        :param settings:
+        :param settings: it provides a dictionary that includes an attribute "sampling_freq" in which sampling
+        frequency of the data and "corr_type" that is the correlation type to use.
         :return:
         """
 
         sampling_freq = settings["sampling_freq"]
-        type_corr = settings["corr_type"]
+        type_corr = settings["corr_type"]  # TODO: the corr type is not used at the moment, fix this
         time = [0, 0, 0]
         x = np.transpose(x)
         n_samples = x.shape[0]
@@ -152,7 +163,8 @@ class FeaturesImplementations:
         """
 
         :param x: the input signal. Its size is (number of channels, samples).
-        :param settings:
+        :param settings: it provides a dictionary that includes an attribute "sampling_freq" in which sampling
+        frequency of the data, "spectral_edge_tfreq" (40) and the "spectral_edge_power_coef"  (0.5).
         :return:
         """
         sfreq = settings["sampling_freq"]
@@ -179,9 +191,11 @@ class FeaturesImplementations:
     @staticmethod
     def correlation_channels_time(x, settings):
         """
+        This function calculates the correlation between channels for the provided data. It also provides
+        the eigen values related to the correlation matrix.
 
         :param x: the input signal. Its size is (number of channels, samples).
-        :param settings:
+        :param settings: it provides a dictionary, empty for this function.
         :return:
         """
 
@@ -207,9 +221,11 @@ class FeaturesImplementations:
     @staticmethod
     def correlation_channels_freq(x, settings):
         """
+        This function provides the correlation between each pair of channels in the frequency domain. It also provides
+        the eigen values related to the correlation matrix.
 
         :param x: the input signal. Its size is (number of channels, samples).
-        :param settings:
+        :param settings: it provides a dictionary, empty for this function.
         :return:
         """
         # Calculate correlation matrix and its eigenvalues (b/w channels)
@@ -273,13 +289,13 @@ class FeaturesImplementations:
         This code was taken from pyEEG, 0.02 r1: http://pyeeg.sourceforge.net/
 
         :param x:  the input signal. Its size is (number of channels, samples).
-        :param settings: dummy for kartz.
+        :param settings: dummy for hjorth FD.
         :return: petrosian fractal dimension for each channel.
         """
 
         t = timer()
         dimensions_channels = np.apply_along_axis(FeaturesCalcHelper.calc_hjorth_fractal_dimension, 1,
-                                         x, settings["hjorth_fd_k_max"])
+                                                  x, settings["hjorth_fd_k_max"])
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["h-jorth-FD"],
                                                   dimensions_channels, "hjorth_fractal_dimension", [t])
@@ -291,7 +307,7 @@ class FeaturesImplementations:
         Petrosian fractal dimension, see https://www.seas.upenn.edu/~littlab/Site/Publications_files/Esteller_2001.pdf
 
         :param x:  the input signal. Its size is (number of channels, samples).
-        :param settings: dummy for kartz.
+        :param settings: dummy for petrosian.
         :return: petrosian fractal dimension for each channel.
         """
         t = timer()
@@ -310,7 +326,8 @@ class FeaturesImplementations:
         :param settings: dummy for kartz
         :return: kartz exponent for each channel
         """
-        def get_kartz(x): return np.log(np.abs(x - x[0]).max())/np.log(len(x))
+
+        def get_kartz(x): return np.log(np.abs(x - x[0]).max()) / np.log(len(x))
 
         t = timer()
         dimensions_channels = np.apply_along_axis(get_kartz, 1, x)
@@ -339,11 +356,15 @@ class FeaturesImplementations:
     @staticmethod
     def detrended_fluctuation(x, settings):
         """
+        This calculates the detrended fluctuation analysis. See
+        https://en.wikipedia.org/wiki/Detrended_fluctuation_analysis.
 
-        :param x:
-        :param settings:
+        :param x: the input signal. Its size is (number of channels, samples).
+        :param settings: the setting dictionary that includes an attribute "dfa_overlap" that is boolean for
+        overlapping/non-overlapping calculations, and "dfa_order" that is the order for fitting.
         :return:
         """
+
         n_samples = x.shape[1]
         nvals = FeaturesCalcHelper.calc_logarithmic_n(4, 0.1 * n_samples, 1.2)
         overlap = settings["dfa_overlap"]
@@ -351,6 +372,7 @@ class FeaturesImplementations:
 
         t = timer()
         dfa_channels = 0
+        # TODO: the following codes is extremely slow, we need to improve its performance.
         # np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, nvals=nvals, overlap=overlap, order=order)
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["detrended_fluctuation"],
@@ -360,11 +382,13 @@ class FeaturesImplementations:
     @staticmethod
     def autocorrelation(x, settings):
         """
+        This function calculates the autocorrelation of signals for each channel.
 
-        :param x:
-        :param settings:
+        :param x: the input signal. Its size is (number of channels, samples).
+        :param settings: a dictionary with one attribute, "autocorr_n_lags", that is the max lag for autocorrelation.
         :return:
         """
+
         t = timer()
         autocorrs = np.apply_along_axis(acf, 1, x, unbiased=False, nlags=settings["autocorr_n_lags"])
         autocorrs = autocorrs[:, 1:]
@@ -376,17 +400,20 @@ class FeaturesImplementations:
     @staticmethod
     def autoregression(x, settings):
         """
+        This function calculates the autoregression for each channel.
 
-        :param x:
-        :param settings:
-        :return:
+        :param x: the input signal. Its size is (number of channels, samples).
+        :param settings: a dictionary with one attribute, "autoreg_lag", that is the max lag for autoregression.
+        :return: the "final_value" is a matrix (number of channels, autoreg_lag) indicating the parameters of
+         autoregression for each channel.
         """
+
         autoreg_lag = settings["autoreg_lag"]
         n_channels = x.shape[0]
         t = timer()
         channels_regg = np.zeros((n_channels, autoreg_lag + 1))
         for i in range(0, n_channels):
-            fitted_model = AR(x[i, :]).fit(autoreg_lag) # This is not the same as Matlab's for some reasons!
+            fitted_model = AR(x[i, :]).fit(autoreg_lag)  # This is not the same as Matlab's for some reasons!
             # kk = ARMAResults(fitted_model)
             # autore_vals, dummy1, dummy2 = arburg(x[i, :], autoreg_lag) # This looks like Matlab's but slow
             channels_regg[i, 0: len(fitted_model.params)] = np.real(fitted_model.params)

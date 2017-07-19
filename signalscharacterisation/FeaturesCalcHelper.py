@@ -207,6 +207,7 @@ def calc_dfa(data, nvals=None, overlap=True, order=1, debug_plot=False, plot_fil
 
         # calculate local trends as polynomes
         x = np.arange(n)
+        # TODO: The following is the main contributor to the slow calculations of dfa. Speedup by GPU implementation.
         tpoly = np.array([np.polyfit(x, d[i], order) for i in range(len(d))])
         trend = np.array([np.polyval(tpoly[i], x) for i in range(len(d))])
 
