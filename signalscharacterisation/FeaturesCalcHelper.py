@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import signal
 
 def calc_normalized_fft(x, axis=0):
     """
@@ -238,3 +239,20 @@ def calc_dfa(data, nvals=None, overlap=True, order=1, debug_plot=False, plot_fil
 
     return poly[0]
 
+
+def calc_corrlation(x, y):
+    co = signal.correlate(x, y, mode='valid')
+    return co
+
+
+def crosscorr(x, y, lag=1, both_sides=1):
+    denom = np.std(x) * np.std(y) * len(x)
+    m_x = np.mean(x)
+    m_y = np.mean(y)
+    right_xcoor = [calc_corrlation(x[i:] - m_x, y[0:len(x) - i] - m_y) / denom for i in range(0, lag + 1)]
+    if both_sides == 1:
+        left_xcoor = [calc_corrlation(x[0:len(x) - i] - m_x, y[i:] - m_y) / denom for i in range(1, lag + 1)]
+    else:
+        left_xcoor = []
+    # right_xcoor = [xcorr(x[i:], y) for i in range(1, lag)]
+    return left_xcoor+right_xcoor

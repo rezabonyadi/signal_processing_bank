@@ -3,7 +3,6 @@ from timeit import default_timer as timer
 from scipy import stats
 from spectrum import *
 from statsmodels.tsa.ar_model import AR
-from statsmodels.tsa.stattools import acf
 
 from signalscharacterisation import FeaturesCalcHelper
 
@@ -17,7 +16,8 @@ class FeaturesImplementations:
     features_list = ["accumulated_energy", "moments_channels", "freq_bands_measures", "dyadic_spectrum_measures",
                      "spectral_edge_freq", "correlation_channels_time", "correlation_channels_freq", "h_jorth",
                      "hjorth_fractal_dimension", "petrosian_fractal_dimension", "katz_fractal_dimension",
-                     "hurst_fractal_dimension", "detrended_fluctuation", "autocorrelation", "autoregression"]
+                     "hurst_fractal_dimension", "detrended_fluctuation", "autocorrelation", "autoregression",
+                     "maximum_cross_correlation"]
 
     @staticmethod
     def get_features_list():
@@ -399,10 +399,18 @@ class FeaturesImplementations:
         :param settings: a dictionary with one attribute, "autocorr_n_lags", that is the max lag for autocorrelation.
         :return:
         """
+        n_channels, n_samples = x.shape
+        n_lag = settings["autocorr_n_lags"]
+        autocorrs = np.zeros((n_channels, settings["autocorr_n_lags"]))
 
         t = timer()
-        autocorrs = np.apply_along_axis(acf, 1, x, unbiased=False, nlags=settings["autocorr_n_lags"])
-        autocorrs = autocorrs[:, 1:]
+        for i in range(0, n_channels):
+            temp = FeaturesCalcHelper.crosscorr(x[i, :], x[i, :], lag=n_lag, both_sides=0)
+            autocorrs[i, :] = temp[1:]
+
+        # The following is much slower
+        # autocorrs = np.apply_along_axis(acf, 1, x, unbiased=False, nlags=settings["autocorr_n_lags"])
+
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["autocorrelation"],
                                                   [autocorrs], "autocorrelation", [t], settings["is_normalised"])
@@ -433,3 +441,38 @@ class FeaturesImplementations:
         results = FeaturesCalcHelper.fill_results(["autoregression"],
                                                   [channels_regg], "autoregression", [t], settings["is_normalised"])
         return results
+
+    @staticmethod
+    def maximum_cross_correlation(x, settings):
+        """
+
+        :param x:
+        :param settings:
+        :return:
+        """
+        tau = settings["max_xcorr_downsample_rate"]
+        lag = settings["max_xcorr_lag"]
+
+        # if tau > 1: x = downsample(x, tau)
+
+        tt = FeaturesCalcHelper.crosscorr(x[1, :], x[1, :], 1)
+
+        m, n = x.shape
+        cross_cor_matrix = np.zeros((m, m))
+        t = timer()
+        for i in range(0, m-1):
+            for j in range(i+1, m-1):
+                x_corr = FeaturesCalcHelper.crosscorr(x[i, :], x[j, :], lag)
+                cc_abs = np.abs(x_corr)
+                cross_cor_matrix[i, j] = max(cc_abs)
+
+        t = timer() - t
+
+        iu = np.triu_indices(cross_cor_matrix.shape[0], 1)
+        cross_cor_matrix = cross_cor_matrix[iu]
+        results = FeaturesCalcHelper.fill_results(["maximum_cross_correlation"],
+                                                  [cross_cor_matrix], "maximum_cross_correlation", [t],
+                                                  settings["is_normalised"])
+
+        return results
+
