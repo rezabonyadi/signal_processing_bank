@@ -445,17 +445,16 @@ class FeaturesImplementations:
     @staticmethod
     def maximum_cross_correlation(x, settings):
         """
+        This calculates the maximum correlation measure.
 
-        :param x:
-        :param settings:
-        :return:
+        :param x: the input signal. Its size is (number of channels, samples).
+        :param settings: a dictionary including the downsampling rate and the correlation lag.
+        :return: the maximum correlation measure.
         """
         tau = settings["max_xcorr_downsample_rate"]
         lag = settings["max_xcorr_lag"]
 
         # if tau > 1: x = downsample(x, tau)
-
-        tt = FeaturesCalcHelper.crosscorr(x[1, :], x[1, :], 1)
 
         m, n = x.shape
         cross_cor_matrix = np.zeros((m, m))
