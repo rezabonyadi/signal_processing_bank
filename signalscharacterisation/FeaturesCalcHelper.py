@@ -1,9 +1,11 @@
 import numpy as np
 from scipy import signal
 
+
 def calc_normalized_fft(x, axis=0):
     """
-    Calculates the FFT of the epoch signal. Removes the DC component and normalizes the area to 1
+    Calculates the FFT of the epoch signal. Removes the DC component and normalizes the area to 1.
+
     :param x:
     :param axis:
     :return:
@@ -192,16 +194,16 @@ def calc_logarithmic_n(min_n, max_n, factor):
     return ns
 
 
-def calc_dfa(data, nvals=None, overlap=True, order=1, debug_plot=False, plot_file=None):
+def calc_dfa(data, n_vals=None, overlap=True, order=1, debug_plot=False, plot_file=None):
     total_N = len(data)
-    if nvals is None:
-        nvals = calc_logarithmic_n(4, 0.1 * total_N, 1.2)
+    if n_vals is None:
+        n_vals = calc_logarithmic_n(4, 0.1 * total_N, 1.2)
 
     # create the signal profile (cumulative sum of deviations from the mean => "walk")
     walk = np.nancumsum(data - np.nanmean(data))
     fluctuations = []
 
-    for n in nvals:
+    for n in n_vals:
         # subdivide data into chunks of size n
         if overlap:
             # step size n/2 instead of n
@@ -227,13 +229,13 @@ def calc_dfa(data, nvals=None, overlap=True, order=1, debug_plot=False, plot_fil
     fluctuations = np.array(fluctuations)
     # filter zeros from fluctuations
     nonzero = np.where(fluctuations != 0)
-    nvals = np.array(nvals)[nonzero]
+    n_vals = np.array(n_vals)[nonzero]
     fluctuations = fluctuations[nonzero]
     if len(fluctuations) == 0:
         # all fluctuations are zero => we cannot fit a line
         poly = [np.nan, np.nan]
     else:
-        poly = np.polyfit(np.log(nvals), np.log(fluctuations), 1)
+        poly = np.polyfit(np.log(n_vals), np.log(fluctuations), 1)
         # if debug_plot:
         # plo.plot_reg(np.log(nvals), np.log(fluctuations), poly, "log(n)", "std(X,n)", fname=plot_file)
 
