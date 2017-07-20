@@ -1,6 +1,7 @@
 from timeit import default_timer as timer
 
 from scipy import stats
+from scipy.signal import resample
 from spectrum import *
 from statsmodels.tsa.ar_model import AR
 
@@ -454,13 +455,14 @@ class FeaturesImplementations:
         tau = settings["max_xcorr_downsample_rate"]
         lag = settings["max_xcorr_lag"]
 
-        # if tau > 1: x = downsample(x, tau)
+        n_channels, n_samples = x.shape
+        if tau < 1:
+            x = np.apply_along_axis(resample, 1, x, int(tau * n_samples))
 
-        m, n = x.shape
-        cross_cor_matrix = np.zeros((m, m))
+        cross_cor_matrix = np.zeros((n_channels, n_channels))
         t = timer()
-        for i in range(0, m-1):
-            for j in range(i+1, m-1):
+        for i in range(0, n_channels-1):
+            for j in range(i+1, n_channels-1):
                 x_corr = FeaturesCalcHelper.crosscorr(x[i, :], x[j, :], lag)
                 cc_abs = np.abs(x_corr)
                 cross_cor_matrix[i, j] = max(cc_abs)
