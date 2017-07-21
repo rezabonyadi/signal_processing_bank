@@ -1,5 +1,4 @@
 import numpy as np
-import sklearn
 from signalscharacterisation import SignalsFeatures
 
 x = np.random.rand(16, 10000)
