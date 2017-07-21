@@ -481,16 +481,18 @@ class FeaturesImplementations:
     @staticmethod
     def frequency_harmonise(x, settings):
         """
+        This was used by Michael Hills for the seizure detection competition in 2014 in Kaggle.
+        See https://github.com/MichaelHills/seizure-detection/raw/master/seizure-detection.pdf
 
-        :param x:
-        :param settings:
+        :param x: the input signal. Its size is (number of channels, samples).
+        :param settings: a dictionary including the "freq_hramonies_max_freq".
         :return:
         """
+
         time = [0, 0, 0]
         t = timer()
         m_x = x - np.mean(x, axis=1, keepdims=True)
-        x_mgn = np.log10(np.absolute(np.fft.fft(m_x, n=settings["sampling_freq"], axis=1)))
-        x_mgn = x_mgn[:, :x_mgn.shape[1] - 1]
+        x_mgn = np.log10(np.absolute(np.fft.rfft(m_x, axis=1)[:, 1:settings["freq_hramonies_max_freq"]]))
         time[0] = timer() - t
         x_zscored = mstats.zscore(x_mgn, axis=1)
         channels_correlations = FeaturesCalcHelper.calc_corr(x_zscored)
@@ -505,24 +507,4 @@ class FeaturesImplementations:
                                                   "frequency_harmonise", time,
                                                   settings["is_normalised"])
         return results
-        # ffts = (fft(xT - repmat(mean(xT), size(xT, 1), 1)))
-        # ';
-        # magFfts = log10(abs(ffts(:, 2: settings.cutFreq)));
-        #
-        # fftFilt = magFfts;
-        # fftFiltNorm = zscore(fftFilt);
-        # settings.correlationType = 'Pearson';
-        # xx = eigCorr(fftFiltNorm, settings);
-        #
-        # values
-        # {1} = magFfts(:)';
-        # values
-        # {2} = xx
-        # {1}
-        # ';
-        # values
-        # {3} = xx
-        # {2}
-        # '
 
-        # FeaturesCalcHelper.calc_normalized_fft(x)
