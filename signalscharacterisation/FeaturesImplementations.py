@@ -1,6 +1,6 @@
 from timeit import default_timer as timer
 
-from scipy import stats
+from scipy.stats import skew, kurtosis, mstats
 from scipy.signal import resample
 from spectrum import *
 from statsmodels.tsa.ar_model import AR
@@ -18,7 +18,7 @@ class FeaturesImplementations:
                      "spectral_edge_freq", "correlation_channels_time", "correlation_channels_freq", "h_jorth",
                      "hjorth_fractal_dimension", "petrosian_fractal_dimension", "katz_fractal_dimension",
                      "hurst_fractal_dimension", "detrended_fluctuation", "autocorrelation", "autoregression",
-                     "maximum_cross_correlation"]
+                     "maximum_cross_correlation", "frequency_harmonise"]
 
     @staticmethod
     def get_features_list():
@@ -81,10 +81,10 @@ class FeaturesImplementations:
         variance_values = np.nanvar(x, axis=1)
         variance_time = timer() - t
         t = timer()
-        skewness_values = stats.skew(x, axis=1)
+        skewness_values = skew(x, axis=1)
         skewness_time = timer() - t
         t = timer()
-        kurtosis_values = stats.kurtosis(x, axis=1)
+        kurtosis_values = kurtosis(x, axis=1)
         kurtosis_time = timer() - t
 
         results = FeaturesCalcHelper.fill_results(["mean", "variance", "skewness", "kurtosis"],
@@ -213,7 +213,7 @@ class FeaturesImplementations:
         time[0] = timer() - t
 
         t = timer()
-        eigs = FeaturesCalcHelper.cal_eigens(channels_correlations)
+        eigs = FeaturesCalcHelper.calc_eigens(channels_correlations)
         channels_correlations_eigs = eigs["lambda"]
         time[1] = timer() - t
 
@@ -243,7 +243,7 @@ class FeaturesImplementations:
         channels_correlations = FeaturesCalcHelper.calc_corr(d)
         time[0] = timer() - t
         t = timer()
-        eigs = FeaturesCalcHelper.cal_eigens(channels_correlations)
+        eigs = FeaturesCalcHelper.calc_eigens(channels_correlations)
         channels_correlations_eigs = eigs["lambda"]
         time[1] = timer() - t
 
@@ -477,3 +477,52 @@ class FeaturesImplementations:
 
         return results
 
+
+    @staticmethod
+    def frequency_harmonise(x, settings):
+        """
+
+        :param x:
+        :param settings:
+        :return:
+        """
+        time = [0, 0, 0]
+        t = timer()
+        m_x = x - np.mean(x, axis=1, keepdims=True)
+        x_mgn = np.log10(np.absolute(np.fft.fft(m_x, n=settings["sampling_freq"], axis=1)))
+        x_mgn = x_mgn[:, :x_mgn.shape[1] - 1]
+        time[0] = timer() - t
+        x_zscored = mstats.zscore(x_mgn, axis=1)
+        channels_correlations = FeaturesCalcHelper.calc_corr(x_zscored)
+        eigs = FeaturesCalcHelper.calc_eigens(channels_correlations)
+        time[1] = timer() - t
+        time[2] = time[1]
+
+        channels_corrs_eig_values = eigs["lambda"]
+        channels_corrs_eigs_vectors = eigs["vectors"]
+        results = FeaturesCalcHelper.fill_results(["frequency_harmonise", "lambdas", "eigen_vectors"],
+                                                  [x_mgn, channels_corrs_eig_values, channels_corrs_eigs_vectors],
+                                                  "frequency_harmonise", time,
+                                                  settings["is_normalised"])
+        return results
+        # ffts = (fft(xT - repmat(mean(xT), size(xT, 1), 1)))
+        # ';
+        # magFfts = log10(abs(ffts(:, 2: settings.cutFreq)));
+        #
+        # fftFilt = magFfts;
+        # fftFiltNorm = zscore(fftFilt);
+        # settings.correlationType = 'Pearson';
+        # xx = eigCorr(fftFiltNorm, settings);
+        #
+        # values
+        # {1} = magFfts(:)';
+        # values
+        # {2} = xx
+        # {1}
+        # ';
+        # values
+        # {3} = xx
+        # {2}
+        # '
+
+        # FeaturesCalcHelper.calc_normalized_fft(x)

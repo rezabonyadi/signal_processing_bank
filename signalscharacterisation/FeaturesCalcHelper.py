@@ -4,7 +4,7 @@ from scipy import signal
 
 def calc_normalized_fft(x, axis=0):
     """
-    Calculates the FFT of the epoch signal. Removes the DC component and normalizes the area to 1.
+    Calculates the magnitude of FFT of the input signal. Removes the DC component and normalizes the area to 1.
 
     :param x:
     :param axis:
@@ -62,6 +62,13 @@ def fill_results(measures_names, final_values, function_name, time, normalise=0)
 
 
 def calc_corr(data):
+    """
+    This function returns the correlation between the rows of the data.
+
+    :param data:
+    :return:
+    """
+
     C = np.array(np.corrcoef(data))
     C[np.isnan(C)] = 0  # Replace any NaN with 0
     C[np.isinf(C)] = 0  # Replace any Infinite values with 0
@@ -69,7 +76,7 @@ def calc_corr(data):
     return C
 
 
-def cal_eigens(x):
+def calc_eigens(x):
     w, v = np.linalg.eig(x)
     # print(w)
     w = np.sort(w)
