@@ -2,9 +2,10 @@ from timeit import default_timer as timer
 
 from scipy.stats import skew, kurtosis, mstats
 from scipy.signal import resample
-from spectrum import *
+import numpy as np
+# from spectrum import *
 from statsmodels.tsa.ar_model import AR
-
+from numba import autojit
 from signalscharacterisation import FeaturesCalcHelper
 
 
@@ -65,6 +66,7 @@ class FeaturesImplementations:
         return results
 
     @staticmethod
+    @autojit
     def moments_channels(x, settings):
         """
         Calculates mean, variance, skewness, and kurtosis of the given signal.
@@ -267,19 +269,20 @@ class FeaturesImplementations:
         time = [0, 0, 0]
 
         t = timer()
-        activity = np.nanvar(x, axis=1)
+        activity = np.var(x, axis=1)
         time[0] = t - timer()
 
-        def calc_mobility(x_in): return np.divide(np.nanstd(np.diff(x_in, axis=1)), np.nanstd(x_in, axis=1))
-
         t = timer()
-        mobility = calc_mobility(x)
+        x_diff = np.diff(x, axis=1)
+        x_var = activity
+        x_diff_var = np.var(x_diff, axis=1)
+        mobility = np.sqrt(np.divide(x_diff_var, x_var))
+         # = calc_mobility(x, x_diff)
         time[1] = t - timer()
 
         t = timer()
-        complexity = np.divide(
-            calc_mobility(np.diff(x, axis=1)),
-            calc_mobility(x))
+        x_diff2_var = np.var(np.diff(x_diff, axis=1))
+        complexity = np.divide(x_var * x_diff2_var, x_diff_var * x_diff_var)
         time[2] = t - timer()
 
         results = FeaturesCalcHelper.fill_results(["activity", "mobility", "complexity"],

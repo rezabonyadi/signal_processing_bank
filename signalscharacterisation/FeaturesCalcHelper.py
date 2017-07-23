@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import signal
-
+from numba import autojit
 
 def calc_normalized_fft(x, axis=0):
     """
