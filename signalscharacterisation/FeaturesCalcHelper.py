@@ -2,6 +2,7 @@ import numpy as np
 from scipy import signal
 from numba import autojit
 
+
 def calc_normalized_fft(x, axis=0):
     """
     Calculates the magnitude of FFT of the input signal. Removes the DC component and normalizes the area to 1.
@@ -33,6 +34,7 @@ def eeg_standard_freq_bands():
     return np.array([0.1, 4, 8, 14, 30, 45, 70, 180])  # Frequency levels in Hz
 
 
+
 def calc_spectrum(x, freq_levels, sampling_freq):
     n_samples = x.shape[0]
     n_channels = x.shape[1]
@@ -61,6 +63,7 @@ def fill_results(measures_names, final_values, function_name, time, normalise=0)
     return results
 
 
+
 def calc_corr(data):
     """
     This function returns the correlation between the rows of the data.
@@ -76,12 +79,14 @@ def calc_corr(data):
     return C
 
 
+
 def calc_eigens(x):
     w, v = np.linalg.eig(x)
     # print(w)
     w = np.sort(w)
     w = np.real(w)
     return {"lambda": w, "vectors": v}
+
 
 
 def calc_hjorth_fractal_dimension(x, k_max=3):
@@ -150,6 +155,7 @@ def calc_petrosian_fractal_dimension(X, D=None):
     # N_delta = sum(np.diff(D > 0))
 
     return np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * N_delta))
+
 
 
 def calc_hurst(x):

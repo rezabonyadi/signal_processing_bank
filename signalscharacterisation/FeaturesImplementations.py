@@ -388,7 +388,7 @@ class FeaturesImplementations:
         t = timer()
         dfa_channels = 0
         # TODO: the following codes is extremely slow, we need to improve its performance.
-        # np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, nvals=nvals, overlap=overlap, order=order)
+        np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, nvals=nvals, overlap=overlap, order=order)
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["detrended_fluctuation"],
                                                   [], "detrended_fluctuation", [t], settings["is_normalised"])
