@@ -1,6 +1,12 @@
-import numpy as np
 from scipy import signal
-from numba import autojit
+import numpy as np
+from numba import cuda
+import numpy as np
+from numba import cuda
+from scipy import signal
+from timeit import default_timer as timer
+import GpuSimpleMath
+import GpuHelperClass
 
 
 def calc_normalized_fft(x, axis=0):
@@ -207,14 +213,15 @@ def calc_logarithmic_n(min_n, max_n, factor):
     return ns
 
 
-def calc_dfa(data, n_vals=None, overlap=True, order=1, debug_plot=False, plot_file=None):
+def calc_dfa(data, n_vals=None, overlap=True, order=1, gpu=False, debug_plot=False, plot_file=None):
     total_N = len(data)
     if n_vals is None:
         n_vals = calc_logarithmic_n(4, 0.1 * total_N, 1.2)
 
     # create the signal profile (cumulative sum of deviations from the mean => "walk")
     walk = np.nancumsum(data - np.nanmean(data))
-    fluctuations = []
+    fluctuations = np.zeros(len(n_vals))
+    i = 0
 
     for n in n_vals:
         # subdivide data into chunks of size n
@@ -228,16 +235,16 @@ def calc_dfa(data, n_vals=None, overlap=True, order=1, debug_plot=False, plot_fi
 
         # calculate local trends as polynomes
         x = np.arange(n)
-        # TODO: The following is the main contributor to the slow calculations of dfa. Speedup by GPU implementation.
-        tpoly = np.array([np.polyfit(x, d[i], order) for i in range(len(d))])
-        trend = np.array([np.polyval(tpoly[i], x) for i in range(len(d))])
 
-        # calculate standard deviation ("fluctuation") of walks in d around trend
-        flucs = np.sqrt(np.nansum((d - trend) ** 2, axis=1) / n)
+        if ~gpu:
+            flucs = cpu_calc_fluc(x, d, order)
+        else:
+            flucs = GpuHelperClass.gpu_calc_dfa(x, d, order)
 
         # calculate mean fluctuation over all subsequences
         f_n = np.nansum(flucs) / len(flucs)
-        fluctuations.append(f_n)
+        fluctuations[i] = f_n
+        i += 1
 
     fluctuations = np.array(fluctuations)
     # filter zeros from fluctuations
@@ -254,6 +261,14 @@ def calc_dfa(data, n_vals=None, overlap=True, order=1, debug_plot=False, plot_fi
 
     return poly[0]
 
+
+def cpu_calc_fluc(x, d, order):
+    n = len(x)
+    tpoly = np.array([np.polyfit(x, d[i], order) for i in range(len(d))])
+    trend = np.array([np.polyval(tpoly[i], x) for i in range(len(d))])
+    # calculate standard deviation ("fluctuation") of walks in d around trend
+    flucs = np.sqrt(np.nansum((d - trend) ** 2, axis=1) / n)
+    return flucs
 
 def calc_corrlation(x, y):
     co = signal.correlate(x, y, mode='valid')
