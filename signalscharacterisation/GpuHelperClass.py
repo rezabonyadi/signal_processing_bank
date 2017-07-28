@@ -6,12 +6,14 @@ from timeit import default_timer as timer
 from numba import cuda
 from numba import float64
 
+
 @cuda.jit('f8(f8[:])', device=True)
 def sum_gpu(x):
     s = 0
     for i in range(len(x)):
         s += x[i]
     return s
+
 
 @cuda.jit('f8(f8[:], f8[:], f8)', device=True)
 def least_square(x, y, order):

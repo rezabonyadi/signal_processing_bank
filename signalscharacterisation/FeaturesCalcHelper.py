@@ -5,9 +5,8 @@ import numpy as np
 from numba import cuda
 from scipy import signal
 from timeit import default_timer as timer
-import GpuSimpleMath
-import GpuHelperClass
 
+from signalscharacterisation import GpuHelperClass
 
 def calc_normalized_fft(x, axis=0):
     """
@@ -236,7 +235,7 @@ def calc_dfa(data, n_vals=None, overlap=True, order=1, gpu=False, debug_plot=Fal
         # calculate local trends as polynomes
         x = np.arange(n)
 
-        if ~gpu:
+        if gpu is False:
             flucs = cpu_calc_fluc(x, d, order)
         else:
             flucs = GpuHelperClass.gpu_calc_dfa(x, d, order)

@@ -384,11 +384,13 @@ class FeaturesImplementations:
         nvals = FeaturesCalcHelper.calc_logarithmic_n(4, 0.1 * n_samples, 1.2)
         overlap = settings["dfa_overlap"]
         order = settings["dfa_order"]
+        gpu_use = settings["dfa_gpu"]
 
         t = timer()
         dfa_channels = 0
         # TODO: the following codes is extremely slow, we need to improve its performance.
-        dfa_res = np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, n_vals=nvals, overlap=overlap, order=order)
+        dfa_res = np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, n_vals=nvals, overlap=overlap, order=order,
+                                      gpu=gpu_use)
         t = timer() - t
         results = FeaturesCalcHelper.fill_results(["detrended_fluctuation"],
                                                   [dfa_res], "detrended_fluctuation", [t], settings["is_normalised"])

@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/OneDrive/Projects/Python training/GPUfirst/.idea/GPUfirst.iml" filepath="$USER_HOME$/OneDrive/Projects/Python training/GPUfirst/.idea/GPUfirst.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/signalprocessingbank.iml" filepath="$PROJECT_DIR$/.idea/signalprocessingbank.iml" />
     </modules>
   </component>
