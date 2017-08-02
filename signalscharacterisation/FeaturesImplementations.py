@@ -388,7 +388,6 @@ class FeaturesImplementations:
 
         t = timer()
         dfa_channels = 0
-        # TODO: the following codes is extremely slow, we need to improve its performance.
         dfa_res = np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, n_vals=nvals, overlap=overlap, order=order,
                                       gpu=gpu_use)
         t = timer() - t
@@ -438,7 +437,8 @@ class FeaturesImplementations:
         t = timer()
         channels_regg = np.zeros((n_channels, autoreg_lag + 1))
         for i in range(0, n_channels):
-            fitted_model = AR(x[i, :]).fit(autoreg_lag)  # This is not the same as Matlab's for some reasons!
+            fitted_model = AR(x[i, :]).fit(autoreg_lag)
+            # TODO: This is not the same as Matlab's for some reasons!
             # kk = ARMAResults(fitted_model)
             # autore_vals, dummy1, dummy2 = arburg(x[i, :], autoreg_lag) # This looks like Matlab's but slow
             channels_regg[i, 0: len(fitted_model.params)] = np.real(fitted_model.params)

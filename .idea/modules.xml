@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://D:/projects/gitprojects/automap/.idea/automap.iml" filepath="D:/projects/gitprojects/automap/.idea/automap.iml" />
-      <module fileurl="file://$USER_HOME$/OneDrive/Projects/Python training/secondCNN/.idea/secondCNN.iml" filepath="$USER_HOME$/OneDrive/Projects/Python training/secondCNN/.idea/secondCNN.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/signalprocessingbank.iml" filepath="$PROJECT_DIR$/.idea/signalprocessingbank.iml" />
     </modules>
   </component>
