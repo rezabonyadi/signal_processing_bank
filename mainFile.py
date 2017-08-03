@@ -11,7 +11,7 @@ settings = {"energy_window_size": 10, "sampling_freq": 100, "spectral_edge_tfreq
 # res = SignalsFeatures.moments_channels(x, settings)
 # s = SignalsFeatures()
 fea_list = np.array([0, 1])
-# jhjd
+
 # res1 = s.get_features_by_indexes(fea_list, x, settings)
 # print(s.get_features_names())
 
