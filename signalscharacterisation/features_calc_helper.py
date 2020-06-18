@@ -65,7 +65,22 @@ def fill_results(measures_names, final_values, function_name, time, normalise=0)
     results["function_name"] = function_name
     results["time"] = time
     results["is_normalised"] = normalise
+    # results['flatten'] = flatten_results(measures_names, final_values)
     return results
+
+
+def flatten_results(measures_names, final_values):
+    headers = []
+    values = []
+    i = 0
+    for m in measures_names:
+        for v in final_values[i]:
+            values.append(v)
+            headers.append(''.join([m, '_', str(i)]))
+
+        i += 1
+
+    return values
 
 
 def calc_corr(data):
@@ -231,12 +246,12 @@ def calc_dfa(data, n_vals=None, overlap=True, order=1, gpu=False, debug_plot=Fal
         # calculate local trends as polynomes
         x = np.arange(n)
         flucs = cpu_calc_fluc(x, d, order)
-        
+
         # TODO: No GPU support for now
         # if gpu is False:
-            # flucs = cpu_calc_fluc(x, d, order)
+        # flucs = cpu_calc_fluc(x, d, order)
         # else:
-            # flucs = GpuHelperClass.gpu_calc_dfa(x, d, order)
+        # flucs = GpuHelperClass.gpu_calc_dfa(x, d, order)
 
         # calculate mean fluctuation over all subsequences
         f_n = np.nansum(flucs) / len(flucs)

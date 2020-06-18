@@ -1,4 +1,4 @@
-from signalscharacterisation.features_implementations import FeaturesImplementations as FeImpl
+from signalscharacterisation import constants_settings
 
 
 def call_features_by_indexes(features_indexes, x, settings, normalise=0):
@@ -23,13 +23,15 @@ def call_features_by_indexes(features_indexes, x, settings, normalise=0):
 
     return return_list
 
+
 def get_features_list():
     """
     Returns the list of available features with this library.
 
     :return:
     """
-    return FeImpl.get_features_list()
+    return list(constants_settings.features_dict.keys())
+
 
 def call_feature_by_name(feature_name, x, settings, normalise=0):
     """
@@ -43,6 +45,6 @@ def call_feature_by_name(feature_name, x, settings, normalise=0):
     :return: The dictionary including "final_values", "time" of calculations, "measures_names" calculated in that
     function, and the "function_name".
     """
-    feature = getattr(FeImpl, feature_name)
+    feature = constants_settings.features_dict[feature_name]
     settings["is_normalised"] = normalise
     return feature(x, settings)
