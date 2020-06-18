@@ -5,8 +5,8 @@ from scipy.signal import resample
 import numpy as np
 # from spectrum import *
 from statsmodels.tsa.ar_model import AR
-from numba import autojit
-from signalscharacterisation import FeaturesCalcHelper
+from numba import jit
+from signalscharacterisation import features_calc_helper as fch
 
 
 class FeaturesImplementations:
@@ -61,12 +61,12 @@ class FeaturesImplementations:
         # if settings["is_normalised"] == 1:
         #     final_values /= final_values.sum()
 
-        results = FeaturesCalcHelper.fill_results(["energy"], [final_values],
+        results = fch.fill_results(["energy"], [final_values],
                                                   "accumulated_energy", [total_time], settings["is_normalised"])
         return results
 
     @staticmethod
-    @autojit
+    @jit
     def moments_channels(x, settings):
         """
         Calculates mean, variance, skewness, and kurtosis of the given signal.
@@ -89,7 +89,7 @@ class FeaturesImplementations:
         kurtosis_values = kurtosis(x, axis=1)
         kurtosis_time = timer() - t
 
-        results = FeaturesCalcHelper.fill_results(["mean", "variance", "skewness", "kurtosis"],
+        results = fch.fill_results(["mean", "variance", "skewness", "kurtosis"],
                                                   [mean_values, variance_values, skewness_values, kurtosis_values],
                                                   "moments_channels",
                                                   [mean_time, variance_time, skewness_time, kurtosis_time],
@@ -111,13 +111,13 @@ class FeaturesImplementations:
         x = np.transpose(x)
 
         t = timer()
-        freq_levels = FeaturesCalcHelper.eeg_standard_freq_bands()
-        power_spectrum = FeaturesCalcHelper.calc_spectrum(x, freq_levels, sampling_freq)
+        freq_levels = fch.eeg_standard_freq_bands()
+        power_spectrum = fch.calc_spectrum(x, freq_levels, sampling_freq)
         time[0] = timer() - t
         t = timer()
         shannon_entropy = -1 * np.sum(np.multiply(power_spectrum, np.log(power_spectrum)), axis=0)
         time[1] = timer() - t
-        results = FeaturesCalcHelper.fill_results(["power spectrum", "shannon entropy"],
+        results = fch.fill_results(["power spectrum", "shannon entropy"],
                                                   [power_spectrum, shannon_entropy],
                                                   "freq_bands_measures", time, settings["is_normalised"])
 
@@ -151,17 +151,17 @@ class FeaturesImplementations:
 
         dyadic_freq_levels = np.flipud(dyadic_freq_levels)
         t = timer()
-        power_spectrum = FeaturesCalcHelper.calc_spectrum(x, dyadic_freq_levels, sampling_freq)
+        power_spectrum = fch.calc_spectrum(x, dyadic_freq_levels, sampling_freq)
         time[0] = timer() - t
         t = timer()
         shannon_entropy = -1 * np.sum(np.multiply(power_spectrum, np.log(power_spectrum)), axis=0)
         time[1] = timer() - t
         t = timer()
-        power_spec_corr = FeaturesCalcHelper.calc_corr(np.transpose(power_spectrum))
+        power_spec_corr = fch.calc_corr(np.transpose(power_spectrum))
         iu = np.triu_indices(power_spec_corr.shape[0], 1)
         power_spec_corr = power_spec_corr[iu]
         time[2] = timer() - t
-        results = FeaturesCalcHelper.fill_results(["power spectrum", "shannon entropy", "dyadic powers corr"],
+        results = fch.fill_results(["power spectrum", "shannon entropy", "dyadic powers corr"],
                                                   [power_spectrum, shannon_entropy, power_spec_corr],
                                                   "dyadic_spectrum_measures", time, settings["is_normalised"])
 
@@ -185,7 +185,7 @@ class FeaturesImplementations:
         t = timer()
         topfreq = int(round(n_samples / sfreq * tfreq)) + 1
 
-        D = FeaturesCalcHelper.calc_normalized_fft(x)
+        D = fch.calc_normalized_fft(x)
         A = np.cumsum(D[:topfreq, :], axis=0)
         B = A - (A.max() * ppow)
         spedge = np.min(np.abs(B), axis=0)
@@ -193,7 +193,7 @@ class FeaturesImplementations:
 
         t = timer() - t
 
-        results = FeaturesCalcHelper.fill_results(["spectral edge freq"], [spedge],
+        results = fch.fill_results(["spectral edge freq"], [spedge],
                                                   "spectral_edge_freq", [t], settings["is_normalised"])
         return results
 
@@ -211,18 +211,18 @@ class FeaturesImplementations:
         time = [0, 0]
 
         t = timer()
-        channels_correlations = FeaturesCalcHelper.calc_corr(x)
+        channels_correlations = fch.calc_corr(x)
         time[0] = timer() - t
 
         t = timer()
-        eigs = FeaturesCalcHelper.calc_eigens(channels_correlations)
+        eigs = fch.calc_eigens(channels_correlations)
         channels_correlations_eigs = eigs["lambda"]
         time[1] = timer() - t
 
         iu = np.triu_indices(channels_correlations.shape[0], 1)
         channels_correlations = channels_correlations[iu]
 
-        results = FeaturesCalcHelper.fill_results(["correlation_channels", "lambda"],
+        results = fch.fill_results(["correlation_channels", "lambda"],
                                                   [channels_correlations, channels_correlations_eigs],
                                                   "correlation_channels_time", [time], settings["is_normalised"])
         return results
@@ -241,18 +241,18 @@ class FeaturesImplementations:
         time = [0, 0]
 
         t = timer()
-        d = np.transpose(FeaturesCalcHelper.calc_normalized_fft(np.transpose(x)))
-        channels_correlations = FeaturesCalcHelper.calc_corr(d)
+        d = np.transpose(fch.calc_normalized_fft(np.transpose(x)))
+        channels_correlations = fch.calc_corr(d)
         time[0] = timer() - t
         t = timer()
-        eigs = FeaturesCalcHelper.calc_eigens(channels_correlations)
+        eigs = fch.calc_eigens(channels_correlations)
         channels_correlations_eigs = eigs["lambda"]
         time[1] = timer() - t
 
         iu = np.triu_indices(channels_correlations.shape[0], 1)
         channels_correlations = channels_correlations[iu]
 
-        results = FeaturesCalcHelper.fill_results(["correlation_channels_freq", "lambda"],
+        results = fch.fill_results(["correlation_channels_freq", "lambda"],
                                                   [channels_correlations, channels_correlations_eigs],
                                                   "correlation_channels_freq", [time], settings["is_normalised"])
         return results
@@ -285,7 +285,7 @@ class FeaturesImplementations:
         complexity = np.divide(x_var * x_diff2_var, x_diff_var * x_diff_var)
         time[2] = t - timer()
 
-        results = FeaturesCalcHelper.fill_results(["activity", "mobility", "complexity"],
+        results = fch.fill_results(["activity", "mobility", "complexity"],
                                                   [activity, mobility, complexity], "h_jorth", [t],
                                                   settings["is_normalised"])
         return results
@@ -305,10 +305,10 @@ class FeaturesImplementations:
         """
 
         t = timer()
-        dimensions_channels = np.apply_along_axis(FeaturesCalcHelper.calc_hjorth_fractal_dimension, 1,
+        dimensions_channels = np.apply_along_axis(fch.calc_hjorth_fractal_dimension, 1,
                                                   x, settings["hjorth_fd_k_max"])
         t = timer() - t
-        results = FeaturesCalcHelper.fill_results(["h-jorth-FD"],
+        results = fch.fill_results(["h-jorth-FD"],
                                                   [dimensions_channels], "hjorth_fractal_dimension", [t],
                                                   settings["is_normalised"])
         return results
@@ -323,9 +323,9 @@ class FeaturesImplementations:
         :return: petrosian fractal dimension for each channel.
         """
         t = timer()
-        dimensions_channels = np.apply_along_axis(FeaturesCalcHelper.calc_petrosian_fractal_dimension, 1, x)
+        dimensions_channels = np.apply_along_axis(fch.calc_petrosian_fractal_dimension, 1, x)
         t = timer() - t
-        results = FeaturesCalcHelper.fill_results(["petrosian-FD"],
+        results = fch.fill_results(["petrosian-FD"],
                                                   [dimensions_channels], "petrosian_fractal_dimension", [t],
                                                   settings["is_normalised"])
         return results
@@ -346,7 +346,7 @@ class FeaturesImplementations:
         dimensions_channels = np.apply_along_axis(get_kartz, 1, x)
         t = timer() - t
 
-        results = FeaturesCalcHelper.fill_results(["kartz-FD"],
+        results = fch.fill_results(["kartz-FD"],
                                                   [dimensions_channels], "katz_fractal_dimension", [t],
                                                   settings["is_normalised"])
         return results
@@ -361,9 +361,9 @@ class FeaturesImplementations:
         :return: petrosian fractal dimension for each channel.
         """
         t = timer()
-        dimensions_channels = np.apply_along_axis(FeaturesCalcHelper.calc_hurst, 1, x)
+        dimensions_channels = np.apply_along_axis(fch.calc_hurst, 1, x)
         t = timer() - t
-        results = FeaturesCalcHelper.fill_results(["hurst-FD"],
+        results = fch.fill_results(["hurst-FD"],
                                                   [dimensions_channels], "hurst_fractal_dimension", [t],
                                                   settings["is_normalised"])
         return results
@@ -381,17 +381,17 @@ class FeaturesImplementations:
         """
 
         n_samples = x.shape[1]
-        nvals = FeaturesCalcHelper.calc_logarithmic_n(4, 0.1 * n_samples, 1.2)
+        nvals = fch.calc_logarithmic_n(4, 0.1 * n_samples, 1.2)
         overlap = settings["dfa_overlap"]
         order = settings["dfa_order"]
         gpu_use = settings["dfa_gpu"]
 
         t = timer()
         dfa_channels = 0
-        dfa_res = np.apply_along_axis(FeaturesCalcHelper.calc_dfa, 1, x, n_vals=nvals, overlap=overlap, order=order,
+        dfa_res = np.apply_along_axis(fch.calc_dfa, 1, x, n_vals=nvals, overlap=overlap, order=order,
                                       gpu=gpu_use)
         t = timer() - t
-        results = FeaturesCalcHelper.fill_results(["detrended_fluctuation"],
+        results = fch.fill_results(["detrended_fluctuation"],
                                                   [dfa_res], "detrended_fluctuation", [t], settings["is_normalised"])
         return results
 
@@ -410,14 +410,14 @@ class FeaturesImplementations:
 
         t = timer()
         for i in range(0, n_channels):
-            temp = FeaturesCalcHelper.crosscorr(x[i, :], x[i, :], lag=n_lag, both_sides=0)
+            temp = fch.crosscorr(x[i, :], x[i, :], lag=n_lag, both_sides=0)
             autocorrs[i, :] = temp[1:]
 
         # The following is much slower
         # autocorrs = np.apply_along_axis(acf, 1, x, unbiased=False, nlags=settings["autocorr_n_lags"])
 
         t = timer() - t
-        results = FeaturesCalcHelper.fill_results(["autocorrelation"],
+        results = fch.fill_results(["autocorrelation"],
                                                   [autocorrs], "autocorrelation", [t], settings["is_normalised"])
         return results
 
@@ -444,7 +444,7 @@ class FeaturesImplementations:
             channels_regg[i, 0: len(fitted_model.params)] = np.real(fitted_model.params)
 
         t = timer() - t
-        results = FeaturesCalcHelper.fill_results(["autoregression"],
+        results = fch.fill_results(["autoregression"],
                                                   [channels_regg], "autoregression", [t], settings["is_normalised"])
         return results
 
@@ -468,7 +468,7 @@ class FeaturesImplementations:
         t = timer()
         for i in range(0, n_channels-1):
             for j in range(i+1, n_channels-1):
-                x_corr = FeaturesCalcHelper.crosscorr(x[i, :], x[j, :], lag)
+                x_corr = fch.crosscorr(x[i, :], x[j, :], lag)
                 cc_abs = np.abs(x_corr)
                 cross_cor_matrix[i, j] = max(cc_abs)
 
@@ -476,7 +476,7 @@ class FeaturesImplementations:
 
         iu = np.triu_indices(cross_cor_matrix.shape[0], 1)
         cross_cor_matrix = cross_cor_matrix[iu]
-        results = FeaturesCalcHelper.fill_results(["maximum_cross_correlation"],
+        results = fch.fill_results(["maximum_cross_correlation"],
                                                   [cross_cor_matrix], "maximum_cross_correlation", [t],
                                                   settings["is_normalised"])
 
@@ -499,14 +499,14 @@ class FeaturesImplementations:
         x_mgn = np.log10(np.absolute(np.fft.rfft(m_x, axis=1)[:, 1:settings["freq_hramonies_max_freq"]]))
         time[0] = timer() - t
         x_zscored = mstats.zscore(x_mgn, axis=1)
-        channels_correlations = FeaturesCalcHelper.calc_corr(x_zscored)
-        eigs = FeaturesCalcHelper.calc_eigens(channels_correlations)
+        channels_correlations = fch.calc_corr(x_zscored)
+        eigs = fch.calc_eigens(channels_correlations)
         time[1] = timer() - t
         time[2] = time[1]
 
         channels_corrs_eig_values = eigs["lambda"]
         channels_corrs_eigs_vectors = eigs["vectors"]
-        results = FeaturesCalcHelper.fill_results(["frequency_harmonise", "lambdas", "eigen_vectors"],
+        results = fch.fill_results(["frequency_harmonise", "lambdas", "eigen_vectors"],
                                                   [x_mgn, channels_corrs_eig_values, channels_corrs_eigs_vectors],
                                                   "frequency_harmonise", time,
                                                   settings["is_normalised"])

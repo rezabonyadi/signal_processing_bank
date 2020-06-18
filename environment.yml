@@ -1,0 +1,10 @@
+name: signal_bank
+dependencies:
+  - python=3.7
+  - numpy
+  - scipy
+  - cudatoolkit
+  - numba
+  - pandas
+  - statsmodels
+  - matplotlib

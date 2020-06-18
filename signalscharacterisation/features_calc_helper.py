@@ -1,12 +1,13 @@
 from scipy import signal
 import numpy as np
-from numba import cuda
+# from numba import cuda
 import numpy as np
-from numba import cuda
+# from numba import cuda
 from scipy import signal
 from timeit import default_timer as timer
 
 from signalscharacterisation import GpuHelperClass
+
 
 def calc_normalized_fft(x, axis=0):
     """
@@ -39,7 +40,6 @@ def eeg_standard_freq_bands():
     return np.array([0.1, 4, 8, 14, 30, 45, 70, 180])  # Frequency levels in Hz
 
 
-
 def calc_spectrum(x, freq_levels, sampling_freq):
     n_samples = x.shape[0]
     n_channels = x.shape[1]
@@ -68,7 +68,6 @@ def fill_results(measures_names, final_values, function_name, time, normalise=0)
     return results
 
 
-
 def calc_corr(data):
     """
     This function returns the correlation between the rows of the data.
@@ -84,14 +83,12 @@ def calc_corr(data):
     return C
 
 
-
 def calc_eigens(x):
     w, v = np.linalg.eig(x)
     # print(w)
     w = np.sort(w)
     w = np.real(w)
     return {"lambda": w, "vectors": v}
-
 
 
 def calc_hjorth_fractal_dimension(x, k_max=3):
@@ -160,7 +157,6 @@ def calc_petrosian_fractal_dimension(X, D=None):
     # N_delta = sum(np.diff(D > 0))
 
     return np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * N_delta))
-
 
 
 def calc_hurst(x):
@@ -234,11 +230,13 @@ def calc_dfa(data, n_vals=None, overlap=True, order=1, gpu=False, debug_plot=Fal
 
         # calculate local trends as polynomes
         x = np.arange(n)
-
-        if gpu is False:
-            flucs = cpu_calc_fluc(x, d, order)
-        else:
-            flucs = GpuHelperClass.gpu_calc_dfa(x, d, order)
+        flucs = cpu_calc_fluc(x, d, order)
+        
+        # TODO: No GPU support for now
+        # if gpu is False:
+            # flucs = cpu_calc_fluc(x, d, order)
+        # else:
+            # flucs = GpuHelperClass.gpu_calc_dfa(x, d, order)
 
         # calculate mean fluctuation over all subsequences
         f_n = np.nansum(flucs) / len(flucs)
@@ -269,6 +267,7 @@ def cpu_calc_fluc(x, d, order):
     flucs = np.sqrt(np.nansum((d - trend) ** 2, axis=1) / n)
     return flucs
 
+
 def calc_corrlation(x, y):
     co = signal.correlate(x, y, mode='valid')
     return co
@@ -284,4 +283,4 @@ def crosscorr(x, y, lag=1, both_sides=1):
     else:
         left_xcoor = []
     # right_xcoor = [xcorr(x[i:], y) for i in range(1, lag)]
-    return left_xcoor+right_xcoor
+    return left_xcoor + right_xcoor

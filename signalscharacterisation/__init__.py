@@ -1,1 +1,2 @@
-from signalscharacterisation.FeaturesBank import SignalsFeatures
+from signalscharacterisation import features_bank
+from signalscharacterisation.features_implementations import FeaturesImplementations
