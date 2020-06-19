@@ -7,7 +7,6 @@ import numpy as np
 from statsmodels.tsa.ar_model import AutoReg as AR
 from signalscharacterisation import features_calc_helper as fch
 
-
 """
 This class implements a set of methods, each provide some characteristics of their input signal, x, according to
 the provided settings. It is assumed that the signal x is m by n, where m is the number of channels and n is the
@@ -47,7 +46,7 @@ def accumulated_energy(x, settings):
     #     final_values /= final_values.sum()
 
     results = fch.fill_results(["energy"], [final_values],
-                                                "accumulated_energy", [total_time], settings["is_normalised"])
+                               "accumulated_energy", [total_time], settings["is_normalised"])
     return results
 
 
@@ -75,10 +74,10 @@ def moments_channels(x, settings):
     kurtosis_time = timer() - t
 
     results = fch.fill_results(["mean", "variance", "skewness", "kurtosis"],
-                                                [mean_values, variance_values, skewness_values, kurtosis_values],
-                                                "moments_channels",
-                                                [mean_time, variance_time, skewness_time, kurtosis_time],
-                                                settings["is_normalised"])
+                               [mean_values, variance_values, skewness_values, kurtosis_values],
+                               "moments_channels",
+                               [mean_time, variance_time, skewness_time, kurtosis_time],
+                               settings["is_normalised"])
 
     return results
 
@@ -104,10 +103,11 @@ def freq_bands_measures(x, settings):
     shannon_entropy = -1 * np.sum(np.multiply(power_spectrum, np.log(power_spectrum)), axis=0)
     time[1] = timer() - t
     results = fch.fill_results(["power spectrum", "shannon entropy"],
-                                                [power_spectrum, shannon_entropy],
-                                                "freq_bands_measures", time, settings["is_normalised"])
+                               [power_spectrum, shannon_entropy],
+                               "freq_bands_measures", time, settings["is_normalised"])
 
     return results
+
 
 def dyadic_spectrum_measures(x, settings):
     """
@@ -149,8 +149,8 @@ def dyadic_spectrum_measures(x, settings):
     power_spec_corr = power_spec_corr[iu]
     time[2] = timer() - t
     results = fch.fill_results(["power spectrum", "shannon entropy", "dyadic powers corr"],
-                                                [power_spectrum, shannon_entropy, power_spec_corr],
-                                                "dyadic_spectrum_measures", time, settings["is_normalised"])
+                               [power_spectrum, shannon_entropy, power_spec_corr],
+                               "dyadic_spectrum_measures", time, settings["is_normalised"])
 
     return results
 
@@ -181,8 +181,9 @@ def spectral_edge_freq(x, settings):
     t = timer() - t
 
     results = fch.fill_results(["spectral edge freq"], [spedge],
-                                                "spectral_edge_freq", [t], settings["is_normalised"])
+                               "spectral_edge_freq", [t], settings["is_normalised"])
     return results
+
 
 def correlation_channels_time(x, settings):
     """
@@ -209,9 +210,10 @@ def correlation_channels_time(x, settings):
     channels_correlations = channels_correlations[iu]
 
     results = fch.fill_results(["correlation_channels", "lambda"],
-                                                [channels_correlations, channels_correlations_eigs],
-                                                "correlation_channels_time", [time], settings["is_normalised"])
+                               [channels_correlations, channels_correlations_eigs],
+                               "correlation_channels_time", time, settings["is_normalised"])
     return results
+
 
 def correlation_channels_freq(x, settings):
     """
@@ -238,9 +240,10 @@ def correlation_channels_freq(x, settings):
     channels_correlations = channels_correlations[iu]
 
     results = fch.fill_results(["correlation_channels_freq", "lambda"],
-                                                [channels_correlations, channels_correlations_eigs],
-                                                "correlation_channels_freq", [time], settings["is_normalised"])
+                               [channels_correlations, channels_correlations_eigs],
+                               "correlation_channels_freq", time, settings["is_normalised"])
     return results
+
 
 def h_jorth(x, settings):
     """
@@ -261,7 +264,7 @@ def h_jorth(x, settings):
     x_var = activity
     x_diff_var = np.var(x_diff, axis=1)
     mobility = np.sqrt(np.divide(x_diff_var, x_var))
-        # = calc_mobility(x, x_diff)
+    # = calc_mobility(x, x_diff)
     time[1] = t - timer()
 
     t = timer()
@@ -270,9 +273,10 @@ def h_jorth(x, settings):
     time[2] = t - timer()
 
     results = fch.fill_results(["activity", "mobility", "complexity"],
-                                                [activity, mobility, complexity], "h_jorth", [t],
-                                                settings["is_normalised"])
+                               [activity, mobility, complexity], "h_jorth", time,
+                               settings["is_normalised"])
     return results
+
 
 def hjorth_fractal_dimension(x, settings):
     """
@@ -289,12 +293,13 @@ def hjorth_fractal_dimension(x, settings):
 
     t = timer()
     dimensions_channels = np.apply_along_axis(fch.calc_hjorth_fractal_dimension, 1,
-                                                x, settings["hjorth_fd_k_max"])
+                                              x, settings["hjorth_fd_k_max"])
     t = timer() - t
     results = fch.fill_results(["h-jorth-FD"],
-                                                [dimensions_channels], "hjorth_fractal_dimension", [t],
-                                                settings["is_normalised"])
+                               [dimensions_channels], "hjorth_fractal_dimension", [t],
+                               settings["is_normalised"])
     return results
+
 
 def petrosian_fractal_dimension(x, settings):
     """
@@ -308,9 +313,10 @@ def petrosian_fractal_dimension(x, settings):
     dimensions_channels = np.apply_along_axis(fch.calc_petrosian_fractal_dimension, 1, x)
     t = timer() - t
     results = fch.fill_results(["petrosian-FD"],
-                                                [dimensions_channels], "petrosian_fractal_dimension", [t],
-                                                settings["is_normalised"])
+                               [dimensions_channels], "petrosian_fractal_dimension", [t],
+                               settings["is_normalised"])
     return results
+
 
 def katz_fractal_dimension(x, settings):
     """
@@ -328,9 +334,10 @@ def katz_fractal_dimension(x, settings):
     t = timer() - t
 
     results = fch.fill_results(["kartz-FD"],
-                                                [dimensions_channels], "katz_fractal_dimension", [t],
-                                                settings["is_normalised"])
+                               [dimensions_channels], "katz_fractal_dimension", [t],
+                               settings["is_normalised"])
     return results
+
 
 def hurst_fractal_dimension(x, settings):
     """
@@ -344,9 +351,10 @@ def hurst_fractal_dimension(x, settings):
     dimensions_channels = np.apply_along_axis(fch.calc_hurst, 1, x)
     t = timer() - t
     results = fch.fill_results(["hurst-FD"],
-                                                [dimensions_channels], "hurst_fractal_dimension", [t],
-                                                settings["is_normalised"])
+                               [dimensions_channels], "hurst_fractal_dimension", [t],
+                               settings["is_normalised"])
     return results
+
 
 def detrended_fluctuation(x, settings):
     """
@@ -368,11 +376,12 @@ def detrended_fluctuation(x, settings):
     t = timer()
     dfa_channels = 0
     dfa_res = np.apply_along_axis(fch.calc_dfa, 1, x, n_vals=nvals, overlap=overlap, order=order,
-                                    gpu=gpu_use)
+                                  gpu=gpu_use)
     t = timer() - t
     results = fch.fill_results(["detrended_fluctuation"],
-                                                [dfa_res], "detrended_fluctuation", [t], settings["is_normalised"])
+                               [dfa_res], "detrended_fluctuation", [t], settings["is_normalised"])
     return results
+
 
 def autocorrelation(x, settings):
     """
@@ -396,8 +405,9 @@ def autocorrelation(x, settings):
 
     t = timer() - t
     results = fch.fill_results(["autocorrelation"],
-                                                [autocorrs], "autocorrelation", [t], settings["is_normalised"])
+                               [autocorrs], "autocorrelation", [t], settings["is_normalised"])
     return results
+
 
 def autoregression(x, settings):
     """
@@ -422,8 +432,9 @@ def autoregression(x, settings):
 
     t = timer() - t
     results = fch.fill_results(["autoregression"],
-                                                [channels_regg], "autoregression", [t], settings["is_normalised"])
+                               [channels_regg], "autoregression", [t], settings["is_normalised"])
     return results
+
 
 def maximum_cross_correlation(x, settings):
     """
@@ -442,8 +453,8 @@ def maximum_cross_correlation(x, settings):
 
     cross_cor_matrix = np.zeros((n_channels, n_channels))
     t = timer()
-    for i in range(0, n_channels-1):
-        for j in range(i+1, n_channels-1):
+    for i in range(0, n_channels - 1):
+        for j in range(i + 1, n_channels - 1):
             x_corr = fch.crosscorr(x[i, :], x[j, :], lag)
             cc_abs = np.abs(x_corr)
             cross_cor_matrix[i, j] = max(cc_abs)
@@ -453,10 +464,11 @@ def maximum_cross_correlation(x, settings):
     iu = np.triu_indices(cross_cor_matrix.shape[0], 1)
     cross_cor_matrix = cross_cor_matrix[iu]
     results = fch.fill_results(["maximum_cross_correlation"],
-                                                [cross_cor_matrix], "maximum_cross_correlation", [t],
-                                                settings["is_normalised"])
+                               [cross_cor_matrix], "maximum_cross_correlation", [t],
+                               settings["is_normalised"])
 
     return results
+
 
 def frequency_harmonies(x, settings):
     """
@@ -482,7 +494,7 @@ def frequency_harmonies(x, settings):
     channels_corrs_eig_values = eigs["lambda"]
     channels_corrs_eigs_vectors = eigs["vectors"]
     results = fch.fill_results(["frequency_harmonies", "lambdas", "eigen_vectors"],
-                                                [x_mgn, channels_corrs_eig_values, channels_corrs_eigs_vectors],
-                                                "frequency_harmonise", time,
-                                                settings["is_normalised"])
+                               [x_mgn, channels_corrs_eig_values, channels_corrs_eigs_vectors],
+                               "frequency_harmonise", time,
+                               settings["is_normalised"])
     return results

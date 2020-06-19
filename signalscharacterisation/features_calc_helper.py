@@ -60,12 +60,20 @@ def fill_results(measures_names, final_values, function_name, time, normalise=0)
         for measure in final_values:
             measure /= measure.sum()
 
-    results["measures_names"] = measures_names
-    results["final_values"] = final_values
+    # results["measures_names"] = measures_names
+    values_dict = {}
+    i = 0
+    for m in measures_names:
+        values_dict[m] = {}
+        values_dict[m]['data'] = final_values[i]
+        values_dict[m]['time'] = time[i]
+        i += 1
+
+    results["values"] = values_dict
     results["function_name"] = function_name
-    results["time"] = time
     results["is_normalised"] = normalise
     # results['flatten'] = flatten_results(measures_names, final_values)
+
     return results
 
 
