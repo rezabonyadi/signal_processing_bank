@@ -37,3 +37,4 @@ settings = {'accumulated_energy': {"energy_window_size": 10},
             'hurst_fractal_dimension': {},
             'frequency_harmonies': {"freq_harmonies_max_freq": 48}
             }
+            
